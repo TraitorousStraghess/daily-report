@@ -1,60 +1,61 @@
-import './style.css'
-import javascriptLogo from './assets/javascript.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import { setupCounter } from './counter.js'
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore";
 
-document.querySelector('#app').innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${javascriptLogo}" class="framework" alt="JavaScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.js</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+// 設定情報
+const firebaseConfig = {
+  apiKey: "AIzaSyATpRgZ6jgtg3uxqBzcLckqHuiuBK6QKDM",
+  authDomain: "daily-report-7892c.firebaseapp.com",
+  projectId: "daily-report-7892c",
+  storageBucket: "daily-report-7892c.appspot.com",
+  messagingSenderId: "570988925649",
+  appId: "1:570988925649:web:b76b640cbf09889b022bf0",
+};
 
-<div class="ticks"></div>
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-          <img class="button-icon" src="${javascriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+// Cloud Firestoreの初期化
+const db = getFirestore(app);
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+// Cloud Firestoreから取得したデータを表示する
+const fetchHistoryData = async () => {
+  let tags = "";
 
-setupCounter(document.querySelector('#counter'))
+  // reportsコレクションのデータを取得
+  const querySnapshot = await getDocs(collection(db, "reports"));
+  
+  // データをテーブル表の形式に合わせてHTMLに挿入
+  querySnapshot.forEach((doc) => {
+    console.log(`${doc.id} => ${doc.data()}`);
+    tags += `<tr><td>${doc.data().date}</td><td>${doc.data().name}</td><td>${doc.data().work}</td><td>${doc.data().comment}</td></tr>`;
+  });
+  document.getElementById("js-history").innerHTML = tags;
+};
+
+// Cloud Firestoreから取得したデータを表示する
+if (document.getElementById("js-history")) {
+  fetchHistoryData(getDocs, collection, db);
+}
+
+// Cloud Firestoreにデータを送信する
+const submitData = async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  
+  try {
+    const docRef = await addDoc(collection(db, "reports"), {
+      date: new Date(),
+      name: formData.get("name"),
+      work: formData.get("work"),
+      comment: formData.get("comment"),
+    });
+    console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+};
+
+// Cloud Firestoreにデータを送信する
+if (document.getElementById("js-form")) {
+  document.getElementById("js-form").addEventListener("submit", (e) => submitData(e, addDoc, collection, db));
+}
