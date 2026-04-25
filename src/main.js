@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore";
-import { fetchHistoryData } from "./my-modules/fetch-history-data";
-import { submitData } from "./my-modules/submit-data";
+import { fetchHistoryData } from "./my-modules/fetch-history-data.js";
+import { submitData } from "./my-modules/submit-data.js";
 
 // 設定情報
 const firebaseConfig = {
@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.APP_ID
+  appId: import.meta.env.VITE_APP_ID
 };
 
 // Initialize Firebase
